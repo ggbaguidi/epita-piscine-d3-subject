@@ -1,16 +1,28 @@
-all:shared static
+CC = gcc
+CFLAGS = -Wall -Wextra -fPIC
+SRC = $(wildcard *.c)
+OBJ = $(SRC:.c=.o)
+SHARED_LIB = libstring.so
+STATIC_LIB = libstring.a
+
+all: shared static
 
 clean:
-	rm -rf *.o
+	rm -f $(OBJ)
 
-distclean:
-	rm -rf *.o *.so *.a
+distclean: clean
+	rm -f $(SHARED_LIB) $(STATIC_LIB)
 
-shared:libstring.so
-libstring.so:
-	gcc -shared -fPIC -o libstring.so *.c
+shared: $(SHARED_LIB)
+libstring.so: $(OBJ)
+	$(CC) -shared -o $@ $^
 
-static:libstring.a
-libstring.a:
-	gcc -c *.c
-	ar rcs libstring.a *.o
+static: $(STATIC_LIB)
+libstring.a: $(OBJ)
+	ar rcs $@ $^
+
+# Pattern rule for object files
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+.PHONY: all clean distclean shared static
